@@ -1,0 +1,22 @@
+diff --git a/cmake/FindJSON.cmake b/cmake/FindJSON.cmake
+index b7d5d79d2..06c4b1b26 100644
+--- a/cmake/FindJSON.cmake
++++ b/cmake/FindJSON.cmake
+@@ -1,4 +1,5 @@
+-FIND_PATH (JSON_INCLUDE json.hpp HINTS "${PROJECT_SOURCE_DIR}/third-party/nlohmann_json")
++#FIND_PATH (JSON_INCLUDE json.hpp HINTS "${PROJECT_SOURCE_DIR}/third-party/nlohmann_json")
++SET (JSON_INCLUDE "${PROJECT_SOURCE_DIR}/third-party/nlohmann_json/")
+ 
+ if (JSON_INCLUDE)
+   set(JSON_BuildTests OFF CACHE INTERNAL "")
+diff --git a/cmake/FindUTF8CPP.cmake b/cmake/FindUTF8CPP.cmake
+index b00035357..73069f51f 100644
+--- a/cmake/FindUTF8CPP.cmake
++++ b/cmake/FindUTF8CPP.cmake
+@@ -1,4 +1,5 @@
+-FIND_PATH (UTF8CPP_INCLUDE utf8.h HINTS "${PROJECT_SOURCE_DIR}/third-party/utf8cpp/source")
++#FIND_PATH (UTF8CPP_INCLUDE utf8.h HINTS "${PROJECT_SOURCE_DIR}/third-party/utf8cpp/source")
++SET (UTF8CPP_INCLUDE "${PROJECT_SOURCE_DIR}/third-party/utf8cpp/source/")
+ 
+ if (UTF8CPP_INCLUDE)
+   message(STATUS "Found UTF8CPP: ${UTF8CPP_INCLUDE}" )

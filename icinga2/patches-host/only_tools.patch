@@ -1,0 +1,87 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 046f23cf2..b83494765 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -163,7 +163,7 @@ else()
+   set(LOGROTATE_CREATE "\n\tcreate 644 ${ICINGA2_USER} ${ICINGA2_GROUP}")
+ endif()
+ 
+-find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS context coroutine date_time filesystem thread system program_options regex REQUIRED)
++#find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS context coroutine date_time filesystem thread system program_options regex REQUIRED)
+ 
+ # Boost.Coroutine2 (the successor of Boost.Coroutine)
+ # (1) doesn't even exist in old Boost versions and
+@@ -172,28 +172,28 @@ add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
+ 
+ add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
+ 
+-link_directories(${Boost_LIBRARY_DIRS})
+-include_directories(${Boost_INCLUDE_DIRS})
++#link_directories(${Boost_LIBRARY_DIRS})
++#include_directories(${Boost_INCLUDE_DIRS})
+ 
+-find_package(OpenSSL REQUIRED)
+-include_directories(${OPENSSL_INCLUDE_DIR})
++#find_package(OpenSSL REQUIRED)
++#include_directories(${OPENSSL_INCLUDE_DIR})
+ 
+ set(base_DEPS ${CMAKE_DL_LIBS} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
+ set(base_OBJS $<TARGET_OBJECTS:mmatch> $<TARGET_OBJECTS:socketpair> $<TARGET_OBJECTS:base>)
+ 
+ # JSON
+-find_package(JSON)
+-include_directories(${JSON_INCLUDE})
++#find_package(JSON)
++#include_directories(${JSON_INCLUDE})
+ 
+ # UTF8CPP
+-find_package(UTF8CPP)
+-include_directories(${UTF8CPP_INCLUDE})
++#find_package(UTF8CPP)
++#include_directories(${UTF8CPP_INCLUDE})
+ 
+-find_package(Editline)
+-set(HAVE_EDITLINE "${EDITLINE_FOUND}")
++#find_package(Editline)
++set(HAVE_EDITLINE "0")
+ 
+-find_package(Termcap)
+-set(HAVE_TERMCAP "${TERMCAP_FOUND}")
++#find_package(Termcap)
++set(HAVE_TERMCAP "0")
+ 
+ include_directories(
+   ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib
+@@ -445,16 +445,16 @@ enable_testing()
+ 
+ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+ 
+-add_subdirectory(third-party)
++#add_subdirectory(third-party)
+ add_subdirectory(tools)
+-add_subdirectory(lib)
+-add_subdirectory(icinga-app)
+-add_subdirectory(etc)
+-add_subdirectory(itl)
+-add_subdirectory(doc)
+-add_subdirectory(agent)
+-add_subdirectory(plugins)
+-add_subdirectory(choco)
++#add_subdirectory(lib)
++#add_subdirectory(icinga-app)
++#add_subdirectory(etc)
++#add_subdirectory(itl)
++#add_subdirectory(doc)
++#add_subdirectory(agent)
++#add_subdirectory(plugins)
++#add_subdirectory(choco)
+ 
+ if(MSVC)
+   add_subdirectory(icinga-installer)
+@@ -520,4 +520,4 @@ if(WIN32)
+   )
+ endif()
+ 
+-include(CPack)
+\ No newline at end of file
++include(CPack)

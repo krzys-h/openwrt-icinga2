@@ -1,0 +1,124 @@
+#!/bin/sh /etc/rc.common
+# Based on the icinga2 init script from the original repo
+
+START=98
+STOP=01
+EXTRA_COMMANDS="checkconfig status"
+EXTRA_HELP=<<EOF
+		status  Check daemon status
+		checkconfig Check configuration files for errors
+EOF
+
+ICINGA2_USER=icinga2
+ICINGA2_GROUP=icinga2
+ICINGA2_COMMAND_GROUP=icinga2
+
+DAEMON=/usr/sbin/icinga2
+
+ICINGA2_CONFIG_FILE=/etc/icinga2/icinga2.conf
+ICINGA2_ERROR_LOG=/var/log/icinga2/error.log
+ICINGA2_STARTUP_LOG=/var/log/icinga2/startup.log
+
+ICINGA2_PID_FILE=/var/icinga2/icinga2.pid
+
+ICINGA2_INIT_RUN_DIR=/var/icinga2
+ICINGA2_LOG_DIR=/var/log/icinga2
+ICINGA2_CACHE_DIR=/var/cache/icinga2
+
+start() {
+	if [ ! -e "$ICINGA2_INIT_RUN_DIR" ]; then
+		mkdir -m 755 "$ICINGA2_INIT_RUN_DIR"
+		mkdir -m 2750 "$ICINGA2_INIT_RUN_DIR"/cmd
+	fi
+	test -e "$ICINGA2_LOG_DIR" || mkdir -m 750 -d "$ICINGA2_LOG_DIR"
+	test -e "$ICINGA2_CACHE_DIR" || mkdir -m 750 -d "$ICINGA2_CACHE_DIR"
+	chown -R $ICINGA2_USER:$ICINGA2_COMMAND_GROUP "$ICINGA2_INIT_RUN_DIR"
+	chown -R $ICINGA2_USER:$ICINGA2_COMMAND_GROUP "$ICINGA2_LOG_DIR"
+	chown -R $ICINGA2_USER:$ICINGA2_COMMAND_GROUP "$ICINGA2_CACHE_DIR"
+
+	$DAEMON daemon -c $ICINGA2_CONFIG_FILE -d -e $ICINGA2_ERROR_LOG > $ICINGA2_STARTUP_LOG 2>&1
+}
+
+stop() {
+	if [ ! -e $ICINGA2_PID_FILE ]; then
+		echo "The PID file '$ICINGA2_PID_FILE' does not exist."
+		exit 7
+	fi
+
+	pid=`cat $ICINGA2_PID_FILE`
+
+	if icinga2 internal signal -s SIGINT -p $pid >/dev/null 2>&1; then
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			if ! icinga2 internal signal -s SIGCHLD -p $pid >/dev/null 2>&1; then
+				break
+			fi
+			sleep 3
+		done
+	fi
+
+	if icinga2 internal signal -s SIGCHLD -p $pid >/dev/null 2>&1; then
+		icinga2 internal signal -s SIGKILL -p $pid >/dev/null 2>&1
+	fi
+}
+
+reload() {
+	OUTPUTFILE=`mktemp`
+	if ! $DAEMON daemon --validate --color > $OUTPUTFILE; then
+		echo "Failed"
+
+		cat $OUTPUTFILE
+		rm -f $OUTPUTFILE
+		exit 1
+	fi
+	rm -f $OUTPUTFILE
+
+	if [ ! -e $ICINGA2_PID_FILE ]; then
+		exit 7
+	fi
+
+	pid=`cat $ICINGA2_PID_FILE`
+	if ! kill -HUP $pid >/dev/null 2>&1; then
+		echo "Error: Icinga not running"
+		exit 7
+	fi
+}
+
+checkconfig() {
+	printf "Checking configuration: "
+
+	if ! $DAEMON daemon -c $ICINGA2_CONFIG_FILE -C > $ICINGA2_STARTUP_LOG 2>&1; then
+		if [ "x$1" = "x" ]; then
+			cat $ICINGA2_STARTUP_LOG
+			echo "Icinga 2 detected configuration errors. Check '$ICINGA2_STARTUP_LOG' for details."
+			exit 1
+		else
+			echo "Not "$1"ing Icinga 2 due to configuration errors. Check '$ICINGA2_STARTUP_LOG' for details."
+			if [ "x$2" = "xfail" ]; then
+				exit 1
+			fi
+		fi
+	fi
+
+	echo "Done"
+	# no arguments requires full output
+	if [ "x$1" = "x" ]; then
+		cat $ICINGA2_STARTUP_LOG
+	fi
+}
+
+status() {
+	printf "Icinga 2 status: "
+
+	if [ ! -e $ICINGA2_PID_FILE ]; then
+		echo "Not running"
+		exit 3
+	fi
+
+	pid=`cat $ICINGA2_PID_FILE`
+	if icinga2 internal signal -s SIGCHLD -p $pid >/dev/null 2>&1; then
+		echo "Running"
+	else
+		echo "Not running"
+		exit 3
+	fi
+}
