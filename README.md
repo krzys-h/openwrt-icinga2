@@ -37,4 +37,8 @@ ssh root@router
 opkg install icinga2_2.12.3-1_mips_24kc.ipk
 opkg install monitoring-plugins_2.3-1_mips_24kc.ipk
 opkg install monitoring-plugins-perl_2.3-1_mips_24kc.ipk  # optional, if you have enough resources to run Perl
+
+# TODO: Until I figure out how to do it in the package, fixup permissions
+chown -R icinga2:icinga2 /usr/var/lib/icinga2/
+chown -R icinga2:icinga2 /etc/icinga2
 ```
