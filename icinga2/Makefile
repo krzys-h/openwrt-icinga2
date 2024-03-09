@@ -1,12 +1,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=icinga2
-PKG_VERSION:=2.12.3
+PKG_VERSION:=2.14.2
 PKG_RELEASE:=1
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
-PKG_SOURCE_PROTO:=git
+PKG_SOURCE_PROTO:=github_archive
+PKG_SOURCE_SUBMODULES:=skip
+SUBMODULES:=skip
 PKG_SOURCE_URL:=https://github.com/Icinga/icinga2.git
+PKG_MIRROR_HASH:=a8b05155950bb37514c03e49d0bf82ffa14077000ebc2abf4d48bc8f0399e845
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_BUILD_DEPENDS:=icinga2/host
@@ -43,9 +46,12 @@ define Package/$(PKG_NAME)
 	SECTION:=utils
 	CATEGORY:=Utilities
 	TITLE:=icinga2
-	DEPENDS:=+boost-context +boost-coroutine +boost-date_time +boost-filesystem +boost-thread +boost-system +boost-program_options +boost-regex +libopenssl +libatomic +libedit +libncurses
+	DEPENDS:=+boost-context +boost-coroutine +boost-date_time +boost-filesystem +boost-iostreams +boost-thread +boost-system +boost-program_options +boost-regex +libopenssl +libatomic +libedit +libncurses
 	URL:=https://icinga.com/
-	USERID:=icinga2:icinga2
+	USERID:=icinga2=5665:icinga2=5665
+	FILE_MODES:=/etc/icinga2:icinga2:icinga2:0750 \
+	/usr/var/lib/icinga2:icinga2:icinga2:0750 \
+	/usr/var/lib/icinga2/certs:icinga2:icinga2:0750
 endef
 
 define Package/$(PKG_NAME)/description
@@ -58,56 +64,32 @@ define Host/Install
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/Bin/Release/mkembedconfig $(STAGING_DIR_HOSTPKG)/bin/
 endef
 
+define Package/$(PKG_NAME)/postinst
+#!/bin/sh
+
+if [ -z "$${IPKG_INSTROOT}" ] ; then
+	( . /etc/uci-defaults/90_icinga-acl ) && rm /etc/uci-defaults/90_icinga-acl
+fi
+
+endef
+
 define Package/$(PKG_NAME)/install
-	$(CP) -r $(PKG_INSTALL_DIR)/* $(1)/
-	rm -r $(1)/usr/share/doc
-	rm -r $(1)/usr/share/man
-	rm -r $(1)/etc/bash_completion.d
-	rm -r $(1)/etc/init.d
-	rm -r $(1)/etc/logrotate.d
-	rm -r $(1)/etc/sysconfig
-	rm $(1)/usr/lib/icinga2/prepare-dirs $(1)/usr/lib/icinga2/safe-reload
-	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/icinga2 $(1)/usr/var/lib/icinga2/certs $(1)/etc/uci-defaults
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/lib/icinga2 $(1)/usr/lib/icinga2
+	$(INSTALL_DIR) $(1)/usr/lib/nagios/plugins $(1)/usr/sbin $(1)/usr/share/icinga2
+	$(INSTALL_BIN) ./files/icinga-acl.postinst $(1)/etc/uci-defaults/90_icinga-acl
 	$(INSTALL_BIN) ./files/icinga2.init $(1)/etc/init.d/icinga2
+	$(CP) -r $(PKG_INSTALL_DIR)/etc/icinga2/* $(1)/etc/icinga2/
+	$(CP) -r $(PKG_INSTALL_DIR)/usr/lib/icinga2/* $(1)/usr/lib/icinga2/
+	$(CP) -r $(PKG_INSTALL_DIR)/usr/lib/nagios/plugins/* $(1)/usr/lib/nagios/plugins/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/icinga2 $(1)/usr/sbin/
+	$(CP) -r $(PKG_INSTALL_DIR)/usr/share/icinga2/* $(1)/usr/share/icinga2/
 endef
 
 define Package/icinga2/conffiles
-/etc/icinga2/icinga2.conf
-/etc/icinga2/zones.conf
-/etc/icinga2/constants.conf
-/etc/icinga2/scripts/mail-service-notification.sh
-/etc/icinga2/scripts/mail-host-notification.sh
-/etc/icinga2/conf.d/users.conf
-/etc/icinga2/conf.d/timeperiods.conf
-/etc/icinga2/conf.d/templates.conf
-/etc/icinga2/conf.d/notifications.conf
-/etc/icinga2/conf.d/services.conf
-/etc/icinga2/conf.d/hosts.conf
-/etc/icinga2/conf.d/groups.conf
-/etc/icinga2/conf.d/downtimes.conf
-/etc/icinga2/conf.d/commands.conf
-/etc/icinga2/conf.d/app.conf
-/etc/icinga2/features-available/syslog.conf
-/etc/icinga2/features-available/mainlog.conf
-/etc/icinga2/features-available/debuglog.conf
-/etc/icinga2/features-available/api.conf
-/etc/icinga2/features-available/icingadb.conf
-/etc/icinga2/features-available/perfdata.conf
-/etc/icinga2/features-available/opentsdb.conf
-/etc/icinga2/features-available/elasticsearch.conf
-/etc/icinga2/features-available/influxdb.conf
-/etc/icinga2/features-available/graphite.conf
-/etc/icinga2/features-available/gelf.conf
-/etc/icinga2/features-available/notification.conf
-/etc/icinga2/features-available/livestatus.conf
-/etc/icinga2/features-available/statusdata.conf
-/etc/icinga2/features-available/compatlog.conf
-/etc/icinga2/features-available/command.conf
-/etc/icinga2/features-available/checker.conf
+/usr/var/lib/icinga2/certs
+/etc/icinga2
 endef
 
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,$(PKG_NAME)))
-
-# chown -R icinga2:icinga2 /usr/var/lib/icinga2/
-# chown -R icinga2:icinga2 /etc/icinga2

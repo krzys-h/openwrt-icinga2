@@ -1,87 +1,70 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 046f23cf2..b83494765 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -163,7 +163,7 @@ else()
+diff -Nru icinga2-2.14.2.orig/CMakeLists.txt icinga2-2.14.2/CMakeLists.txt
+--- icinga2-2.14.2.orig/CMakeLists.txt	2024-01-17 19:49:18.000000000 +0100
++++ icinga2-2.14.2/CMakeLists.txt	2024-03-09 20:26:20.889123937 +0100
+@@ -173,8 +173,6 @@
    set(LOGROTATE_CREATE "\n\tcreate 644 ${ICINGA2_USER} ${ICINGA2_GROUP}")
  endif()
  
--find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS context coroutine date_time filesystem thread system program_options regex REQUIRED)
-+#find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS context coroutine date_time filesystem thread system program_options regex REQUIRED)
- 
+-find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS coroutine context date_time filesystem iostreams thread system program_options regex REQUIRED)
+-
  # Boost.Coroutine2 (the successor of Boost.Coroutine)
  # (1) doesn't even exist in old Boost versions and
-@@ -172,28 +172,28 @@ add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
- 
- add_definitions(-DBOOST_FILESYSTEM_NO_DEPRECATED)
+ # (2) isn't supported by ASIO, yet.
+@@ -185,29 +183,9 @@
+ # Required for Boost v1.74+
+ add_definitions(-DBOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT)
  
 -link_directories(${Boost_LIBRARY_DIRS})
 -include_directories(${Boost_INCLUDE_DIRS})
-+#link_directories(${Boost_LIBRARY_DIRS})
-+#include_directories(${Boost_INCLUDE_DIRS})
- 
+-
 -find_package(OpenSSL REQUIRED)
 -include_directories(${OPENSSL_INCLUDE_DIR})
-+#find_package(OpenSSL REQUIRED)
-+#include_directories(${OPENSSL_INCLUDE_DIR})
- 
+-
  set(base_DEPS ${CMAKE_DL_LIBS} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
  set(base_OBJS $<TARGET_OBJECTS:mmatch> $<TARGET_OBJECTS:socketpair> $<TARGET_OBJECTS:base>)
  
- # JSON
+-# JSON
 -find_package(JSON)
 -include_directories(${JSON_INCLUDE})
-+#find_package(JSON)
-+#include_directories(${JSON_INCLUDE})
- 
- # UTF8CPP
+-
+-# UTF8CPP
 -find_package(UTF8CPP)
 -include_directories(${UTF8CPP_INCLUDE})
-+#find_package(UTF8CPP)
-+#include_directories(${UTF8CPP_INCLUDE})
- 
+-
 -find_package(Editline)
 -set(HAVE_EDITLINE "${EDITLINE_FOUND}")
-+#find_package(Editline)
-+set(HAVE_EDITLINE "0")
- 
+-
 -find_package(Termcap)
 -set(HAVE_TERMCAP "${TERMCAP_FOUND}")
-+#find_package(Termcap)
-+set(HAVE_TERMCAP "0")
- 
+-
  include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib
-@@ -445,16 +445,16 @@ enable_testing()
+   ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/lib
+@@ -469,27 +447,7 @@
  
  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
  
 -add_subdirectory(third-party)
-+#add_subdirectory(third-party)
  add_subdirectory(tools)
 -add_subdirectory(lib)
 -add_subdirectory(icinga-app)
 -add_subdirectory(etc)
 -add_subdirectory(itl)
--add_subdirectory(doc)
 -add_subdirectory(agent)
 -add_subdirectory(plugins)
 -add_subdirectory(choco)
-+#add_subdirectory(lib)
-+#add_subdirectory(icinga-app)
-+#add_subdirectory(etc)
-+#add_subdirectory(itl)
-+#add_subdirectory(doc)
-+#add_subdirectory(agent)
-+#add_subdirectory(plugins)
-+#add_subdirectory(choco)
+-
+-if(NOT WIN32)
+-  add_subdirectory(doc)
+-endif()
+-
+-if(MSVC)
+-  add_subdirectory(icinga-installer)
+-endif()
+-
+-if(ICINGA2_WITH_TESTS)
+-  add_subdirectory(test)
+-endif()
  
- if(MSVC)
-   add_subdirectory(icinga-installer)
-@@ -520,4 +520,4 @@ if(WIN32)
-   )
- endif()
- 
--include(CPack)
-\ No newline at end of file
-+include(CPack)
+ set(CPACK_PACKAGE_NAME "Icinga 2")
+ set(CPACK_PACKAGE_VENDOR "Icinga GmbH")

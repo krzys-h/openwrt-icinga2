@@ -1,0 +1,14 @@
+#!/bin/sh
+
+ICINGA2_USER=icinga2
+ICINGA2_GROUP=icinga2
+
+ICINGA2_CONFIG_DIR=/etc/icinga2
+ICINGA2_USR_VAR_DIR=/usr/var/lib/icinga2
+
+if [ ! -e "$ICINGA2_USR_VAR_DIR" ]; then
+	mkdir -m 755 "$ICINGA2_USR_VAR_DIR"
+fi
+chown -R $ICINGA2_USER:$ICINGA2_GROUP "$ICINGA2_USR_VAR_DIR"
+
+chown -R $ICINGA2_USER:$ICINGA2_GROUP "$ICINGA2_CONFIG_DIR"
