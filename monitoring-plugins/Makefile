@@ -1,12 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=monitoring-plugins
-PKG_VERSION:=2.3
+PKG_VERSION:=2.3.5
 PKG_RELEASE:=1
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
-PKG_SOURCE_PROTO:=git
+PKG_SOURCE_PROTO:=github_archive
 PKG_SOURCE_URL:=https://github.com/monitoring-plugins/monitoring-plugins.git
+PKG_MIRROR_HASH:=2597d85f6d546186d368734511f36df621529b6cfa898a22016784d79ca8331b
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_BUILD_PARALLEL:=1
@@ -31,7 +32,7 @@ CONFIGURE_ARGS += \
 	--with-ps-cols="6" \
 	--with-ps-format="%d %s %d %s %s %n" \
 	--with-ps-varlist="&procpid$(comma)&procuid$(comma)&procvsz$(comma)procstat$(comma)procprog$(comma)&pos" \
-i	--with-ping-command="/usr/bin/ping -n -U -w %d -c %d %s" \
+	--with-ping-command="/usr/bin/ping -n -U -w %d -c %d %s" \
 	--with-ping6-command="/usr/bin/ping6 -n -U -w %d -c %d %s" \
 	--with-nslookup-command="/usr/bin/nslookup" \
 	--with-uptime-command="/usr/bin/uptime" \
@@ -55,7 +56,8 @@ define Package/monitoring-plugins
 	SECTION:=utils
 	CATEGORY:=Utilities
 	TITLE:=monitoring-plugins (native modules)
-	DEPENDS:=+libopenssl +libpthread +iputils-ping +iputils-ping6
+	DEPENDS:=+libopenssl +libpthread
+	EXTRA_DEPENDS:=iputils-ping, iputils-ping6
 	URL:=https://www.monitoring-plugins.org/
 endef
 
